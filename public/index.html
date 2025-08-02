@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IV Cap 即時同步系統</title>
+    <title>1A IV Cap</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,15 +75,15 @@
             background-color: #5a6268;
             transform: scale(1.1);
         }
-        /* 【修改】鎖定按鈕位置在左下角 */
+        /* 【修改】鎖定按鈕位置在右下角 */
         #lock-btn {
             bottom: 20px;
-            left: 20px;
+            right: 20px;
         }
-        /* 【修改】Undo按鈕位置在右下角 */
+        /* 【修改】Undo按鈕位置在左下角 */
         #undo-btn {
             bottom: 20px;
-            right: 20px;
+            left: 20px;
         }
 
         /* --- 【新功能】歷史紀錄選擇器樣式 --- */
@@ -140,9 +140,6 @@
                 <option>沒有歷史紀錄</option>
             </select>
         </div>
-        <!-- 【修改】只顯示最近10筆文字紀錄 -->
-        <h3>最近 10 次操作:</h3>
-        <ul id="history-log" style="text-align: left; max-height: 300px; overflow-y: auto; padding-left: 20px;"></ul>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
