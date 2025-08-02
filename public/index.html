@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IV Cap 即時同步系統</title>
     <style>
-        /* --- 您原有的 CSS，完全保留 --- */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f9f9f9;
             padding: 20px;
-            padding-bottom: 100px; /* 為懸浮按鈕留出空間 */
+            padding-bottom: 100px;
         }
         h1 {
             margin-bottom: 20px;
@@ -23,7 +22,7 @@
             border-radius: 8px;
             background-color: #fff;
         }
-        .bed-container { /* 修改了您的 bed-list，使其可以被鎖定 */
+        .bed-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
@@ -49,23 +48,14 @@
             font-weight: bold;
         }
         #update-time-container {
-            margin-top: 10px;
+            margin-bottom: 20px;
             font-size: 14px;
             color: #666;
         }
         
-        /* --- 您要求的新功能 CSS --- */
-        #control-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column; /* 讓按鈕垂直排列 */
-            gap: 10px;
-        }
+        /* --- 【修改】控制按鈕樣式 --- */
         .control-btn {
-            background-color: rgba(108, 117, 125, 0.8); /* 灰色半透明 */
+            background-color: rgba(108, 117, 125, 0.8);
             color: white;
             border: none;
             border-radius: 50%;
@@ -78,34 +68,57 @@
             align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             transition: all 0.3s;
+            position: fixed; /* 每個按鈕都固定定位 */
+            z-index: 1000;
         }
         .control-btn:hover {
             background-color: #5a6268;
             transform: scale(1.1);
         }
+        /* 【修改】鎖定按鈕位置在左下角 */
+        #lock-btn {
+            bottom: 20px;
+            left: 20px;
+        }
+        /* 【修改】Undo按鈕位置在右下角 */
+        #undo-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* --- 【新功能】歷史紀錄選擇器樣式 --- */
+        #history-controls {
+            margin-top: 15px;
+        }
+        #history-controls label {
+            margin-right: 10px;
+        }
+        #history-select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 您原有的 HTML 結構，完全保留 -->
     <h1>IV Cap</h1>
     <div id="update-time-container">最後更新時間: <span id="time-display">正在連接伺服器...</span></div>
 
-    <!-- Team 1 -->
+    <!-- Team 1, 2, 3 的 HTML 結構完全不變 -->
     <div class="team">
         <h2>Team 1</h2>
         <div class="bed-container" id="team1-beds">
             <div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div>
         </div>
     </div>
-    <!-- Team 2 -->
     <div class="team">
         <h2>Team 2</h2>
         <div class="bed-container" id="team2-beds">
             <div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div>
         </div>
     </div>
-    <!-- Team 3 -->
     <div class="team">
         <h2>Team 3</h2>
         <div class="bed-container" id="team3-beds">
@@ -113,45 +126,48 @@
         </div>
     </div>
 
-    <!-- 您要求的新功能 UI -->
-    <div id="control-panel">
-        <button id="lock-btn" class="control-btn">🔒</button>
-        <button id="undo-btn" class="control-btn">🔙</button>
-    </div>
+    <!-- 控制按鈕 -->
+    <button id="lock-btn" class="control-btn">🔒</button>
+    <button id="undo-btn" class="control-btn">🔙</button>
     
     <!-- 歷史紀錄顯示區 -->
     <div class="team">
-        <h2>歷史紀錄 (近24小時)</h2>
+        <h2>操作歷史</h2>
+        <!-- 【新功能】歷史紀錄下拉選單 -->
+        <div id="history-controls">
+            <label for="history-select">回到指定時間點:</label>
+            <select id="history-select">
+                <option>沒有歷史紀錄</option>
+            </select>
+        </div>
+        <!-- 【修改】只顯示最近10筆文字紀錄 -->
+        <h3>最近 10 次操作:</h3>
         <ul id="history-log" style="text-align: left; max-height: 300px; overflow-y: auto; padding-left: 20px;"></ul>
     </div>
 
-
-    <!-- 引入 Socket.IO 客戶端函式庫 -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- 全局變數 ---
         const socket = io();
         const beds = document.querySelectorAll('.bed');
         const allBedContainers = document.querySelectorAll('.bed-container');
         const timeDisplay = document.getElementById('time-display');
         const historyLogList = document.getElementById('history-log');
+        const historySelect = document.getElementById('history-select'); // 新的下拉選單
         const lockBtn = document.getElementById('lock-btn');
         const undoBtn = document.getElementById('undo-btn');
 
-        // --- 本地鎖定功能邏輯 (與伺服器無關) ---
+        // 本地鎖定功能 (與上次相同)
         let isLocked = true;
         let lockTimer = null;
-        const LOCK_TIMEOUT = 45 * 60 * 1000; // 45分鐘
+        const LOCK_TIMEOUT = 45 * 60 * 1000;
 
         function setLockState(locked) {
             isLocked = locked;
             if (isLocked) {
                 allBedContainers.forEach(c => c.classList.add('locked'));
                 lockBtn.textContent = '🔒';
-                if (lockTimer) {
-                    clearTimeout(lockTimer);
-                    lockTimer = null;
-                }
+                if (lockTimer) clearTimeout(lockTimer);
+                lockTimer = null;
             } else {
                 allBedContainers.forEach(c => c.classList.remove('locked'));
                 lockBtn.textContent = '🔓';
@@ -162,23 +178,43 @@
             }
         }
         
-        lockBtn.addEventListener('click', () => {
-            setLockState(!isLocked);
-        });
+        lockBtn.addEventListener('click', () => setLockState(!isLocked));
         
+        // --- 【修改】Undo 按鈕直接執行，不再詢問 ---
         undoBtn.addEventListener('click', () => {
             if (isLocked) {
                 alert('系統已鎖定，請先點擊 🔓 按鈕解鎖。');
                 return;
             }
-             {
-                socket.emit('undo');
+            socket.emit('undo');
+        });
+
+        // --- 【新功能】監聽歷史紀錄下拉選單的變更 ---
+        historySelect.addEventListener('change', (event) => {
+            if (isLocked) {
+                alert('系統已鎖定，請先點擊 🔓 按鈕解鎖。');
+                // 將選單重置回最新狀態，避免混淆
+                if (historySelect.options.length > 0) {
+                    historySelect.selectedIndex = 0;
+                }
+                return;
+            }
+            const selectedTimestamp = event.target.value;
+            if (!selectedTimestamp) return;
+
+            if (confirm('您確定要將所有床位狀態還原到選定的時間點嗎？此操作會影響所有用戶。')) {
+                socket.emit('revertToTimestamp', selectedTimestamp);
+            } else {
+                // 如果用戶取消，將選單重置回最新狀態
+                if (historySelect.options.length > 0) {
+                    historySelect.selectedIndex = 0;
+                }
             }
         });
 
-        // --- 核心功能：更新整個頁面的 UI ---
+        // --- 核心 UI 更新函數 ---
         function updateUI(stateData) {
-            // 更新所有床位的燈光狀態
+            // 更新床位狀態
             beds.forEach(bed => {
                 const bedId = bed.dataset.bed;
                 if (stateData.state[bedId] === 'on') {
@@ -191,68 +227,61 @@
             // 更新時間顯示
             timeDisplay.textContent = stateData.time;
 
-            // 更新歷史紀錄列表
+            // 更新歷史紀錄
+            const reversedHistory = stateData.history.slice().reverse();
+
+            // 1. 更新【下拉選單】，包含所有歷史紀錄
+            historySelect.innerHTML = '';
+            if (reversedHistory.length === 0) {
+                historySelect.innerHTML = '<option value="">沒有歷史紀錄</option>';
+            } else {
+                reversedHistory.forEach(log => {
+                    const option = document.createElement('option');
+                    option.value = log.timestamp;
+                    option.textContent = log.timeString;
+                    historySelect.appendChild(option);
+                });
+            }
+
+            // 2. 更新【文字列表】，只顯示最近 10 筆
             historyLogList.innerHTML = '';
-            // 只顯示最新的 10 條歷史紀錄，避免頁面過長
-            stateData.history.slice().reverse().slice(0, 10).forEach(log => {
+            reversedHistory.slice(0, 10).forEach(log => {
                 const li = document.createElement('li');
                 li.textContent = `[${log.timeString}] 狀態已更新`;
                 historyLogList.appendChild(li);
             });
         }
 
-        // --- Socket.IO 事件監聽 ---
+        // Socket.IO 事件監聽
+        socket.on('initialState', (data) => updateUI(data));
+        socket.on('stateChanged', (data) => updateUI(data));
 
-        // 1. 監聽來自伺服器的初始狀態
-        socket.on('initialState', (data) => {
-            console.log('已從伺服器接收到初始狀態');
-            updateUI(data);
-        });
-
-        // 2. 監聽來自伺服器的狀態變更廣播
-        socket.on('stateChanged', (data) => {
-            console.log('接收到狀態更新廣播');
-            updateUI(data);
-        });
-
-        // --- 為每個床位添加點擊事件監聽 ---
+        // 為每個床位添加點擊事件監聽 (與上次相同)
         beds.forEach(bed => {
-            // 為每個床位獨立追蹤點擊次數
             let clickCount = 0;
-
             bed.addEventListener('click', () => {
-                if (isLocked) {
-                    alert('系統已鎖定，請先點擊 🔓 按鈕解-鎖。');
-                    return;
-                }
-
+                if (isLocked) return;
                 clickCount++;
                 let stateChanged = false;
-
-                // 您的「按一下亮，再按兩下滅」邏輯
                 if (clickCount === 1 && !bed.classList.contains('on')) {
-                    bed.classList.add('on');
                     stateChanged = true;
                 } else if (clickCount === 2 && bed.classList.contains('on')) {
-                    bed.classList.remove('on');
                     clickCount = 0;
                     stateChanged = true;
                 }
-                
-                // 如果是從滅變亮，但使用者繼續點，重置計數器
-                if (clickCount > 1 && bed.classList.contains('on')) {
-                    // 保持亮燈，不做任何事
-                } else if (clickCount > 2) {
-                    clickCount = 0;
-                }
+                if (clickCount > 2) clickCount = 0;
 
-
-                // 如果狀態真的改變了，就將【完整的】新狀態發送到伺服器
                 if (stateChanged) {
                     const currentState = {};
                     beds.forEach(b => {
                         const bedId = b.dataset.bed;
-                        currentState[bedId] = b.classList.contains('on') ? 'on' : 'off';
+                        // 模擬點擊後的狀態
+                        const isBedBeingClicked = b === bed;
+                        if (isBedBeingClicked) {
+                            currentState[bedId] = b.classList.contains('on') ? 'off' : 'on';
+                        } else {
+                            currentState[bedId] = b.classList.contains('on') ? 'on' : 'off';
+                        }
                     });
                     socket.emit('updateState', currentState);
                 }
@@ -261,7 +290,6 @@
 
         // 初始載入時，保持鎖定狀態
         setLockState(true);
-
     </script>
 </body>
 </html>

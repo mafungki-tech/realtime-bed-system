@@ -9,14 +9,10 @@ const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
 
-// --- 伺服器端資料儲存 ---
-// bedState 的結構將是: { '1': 'on', '2': 'off', '19A': 'on', ... }
 let bedState = {}; 
-// historyLog 的結構將是: { timestamp: 123, state: {'1':'on', ...}, timeString: '...' }
 let historyLog = []; 
 let lastUpdateTime = new Date();
 
-// 初始化所有床位為 'off' 狀態
 const bedIds = [
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
     '16', '17', '18', '19', '19A', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
@@ -26,7 +22,6 @@ bedIds.forEach(id => {
     bedState[id] = 'off';
 });
 
-// 讓伺服器可以提供 public 資料夾中的靜態檔案 (例如 index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
@@ -36,33 +31,27 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('一個新用戶連接上了');
 
-    // 1. 當新用戶連接時，立即發送當前的完整床位狀態和過濾後的歷史紀錄
     socket.emit('initialState', {
         state: bedState,
         history: historyLog,
         time: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
     });
 
-    // 2. 監聽來自客戶端的狀態變更請求
     socket.on('updateState', (newState) => {
-        // 更新伺服器上的狀態
         bedState = newState;
         lastUpdateTime = new Date();
 
-        // 建立一條新的歷史紀錄
         const logEntry = {
             timestamp: lastUpdateTime.getTime(),
-            state: { ...bedState }, // 儲存當前狀態的完整副本
+            state: { ...bedState }, 
             timeString: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
         };
         
         historyLog.push(logEntry);
 
-        // 過濾掉超過24小時的歷史紀錄
         const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
         historyLog = historyLog.filter(entry => entry.timestamp >= twentyFourHoursAgo);
 
-        // 向所有連接的客戶端廣播【完整的】新狀態
         io.emit('stateChanged', {
             state: bedState,
             history: historyLog,
@@ -70,16 +59,39 @@ io.on('connection', (socket) => {
         });
     });
 
-    // 3. 監聽來自客戶端的撤銷請求
     socket.on('undo', () => {
-        // 必須有超過一筆紀錄才能撤銷 (回到上一筆)
+        // 只有當歷史紀錄超過一筆時才執行 (保留初始狀態)
         if (historyLog.length > 1) {
-            historyLog.pop(); // 移除最新的一筆紀錄
+            historyLog.pop(); 
             const previousLog = historyLog[historyLog.length - 1];
-            bedState = previousLog.state; // 恢復到上一筆紀錄的狀態
+            bedState = previousLog.state; 
             lastUpdateTime = new Date(previousLog.timestamp);
 
-            // 廣播【完整的】恢復後狀態
+            io.emit('stateChanged', {
+                state: bedState,
+                history: historyLog,
+                time: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
+            });
+        }
+    });
+
+    // --- 【新功能】處理回到指定時間點的請求 ---
+    socket.on('revertToTimestamp', (timestamp) => {
+        const targetTimestamp = Number(timestamp);
+        
+        // 找到該時間點在歷史紀錄中的索引
+        const targetIndex = historyLog.findIndex(log => log.timestamp === targetTimestamp);
+
+        if (targetIndex !== -1) {
+            // 恢復到該時間點的狀態
+            bedState = historyLog[targetIndex].state;
+            
+            // 刪除該時間點之後的所有歷史紀錄
+            historyLog = historyLog.slice(0, targetIndex + 1);
+            
+            lastUpdateTime = new Date(targetTimestamp);
+
+            // 向所有客戶端廣播恢復後的狀態
             io.emit('stateChanged', {
                 state: bedState,
                 history: historyLog,
