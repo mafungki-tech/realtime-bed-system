@@ -3,27 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多人同步床號系統</title>
+    <title>1A IV Cap</title>
     <style>
-        /* CSS 樣式保持不變，這裡省略以保持簡潔... */
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px; }
-        h1 { margin-bottom: 20px; }
-        #controls { margin-bottom: 20px; }
-        .team { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
-        #bed-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
-        .bed { cursor: pointer; padding: 20px; border-radius: 10px; background-color: #fff; border: 1px solid #ccc; transition: all 0.3s; font-size: 20px; user-select: none; }
-        .bed.on { background-color: yellow; font-size: 24px; font-weight: bold; }
-        #back { margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #back:hover { background-color: #5a6268; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        .team {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        #bed-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        .bed {
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            transition: all 0.3s;
+            font-size: 20px;
+            user-select: none;
+        }
+        .bed.on {
+            background-color: yellow;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #back {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            /* 【修改】按鈕顏色已改為灰色 */
+            background-color: #6c757d; 
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #back:hover {
+            background-color: #5a6268;
+        }
+        #update-time {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        #time-selector {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>多人同步床號系統</h1>
+
+    <h1>1A IV Cap</h1>
+
     <div id="controls">
+        <!-- 【修改】按鈕文字已更新，以反映新功能 -->
         <button id="back">🔙 回到上一步 (Undo)</button>
+        <div id="time-selector">
+            <label for="time-point">查看歷史狀態: </label>
+            <select id="time-point">
+                <option>沒有歷史紀錄</option>
+            </select>
+        </div>
+        <div id="update-time">當前時間: <span id="time"></span></div>
     </div>
 
-    <!-- HTML 床位結構保持不變... -->
+    <!-- HTML 結構保持不變 -->
     <!-- Team 1 -->
     <div class="team">
         <h2>Team 1</h2>
@@ -31,97 +93,160 @@
             <div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div>
         </div>
     </div>
-    <!-- Team 2 & 3 ... (結構一樣) -->
-    <div class="team"><h2>Team 2</h2><div id="bed-list"><div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div></div></div>
-    <div class="team"><h2>Team 3</h2><div id="bed-list"><div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div></div></div>
-    
-    <!-- 引入 Socket.IO 客戶端函式庫 -->
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Team 2 -->
+    <div class="team">
+        <h2>Team 2</h2>
+        <div id="bed-list">
+            <div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div>
+        </div>
+    </div>
+    <!-- Team 3 -->
+    <div class="team">
+        <h2>Team 3</h2>
+        <div id="bed-list">
+            <div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div>
+        </div>
+    </div>
+
     <script>
-        // 連接到我們的 Socket.IO 伺服器
-        const socket = io();
-
         const beds = document.querySelectorAll('.bed');
+        const timeDisplay = document.getElementById('time');
+        const timePointSelect = document.getElementById('time-point');
         const backButton = document.getElementById('back');
+        const storageKey = 'bedSystemHistory';
 
-        // 函數：根據伺服器傳來的狀態來更新頁面顯示
-        function displayState(snapshot) {
-            if (!snapshot || !snapshot.state) return;
-            const onBeds = snapshot.state;
+        function getHistory() {
+            const historyJSON = localStorage.getItem(storageKey);
+            return historyJSON ? JSON.parse(historyJSON) : [];
+        }
+
+        function saveState() {
+            const history = getHistory();
+            const onBeds = [];
             beds.forEach(bed => {
-                // 檢查伺服器狀態中是否包含這個床號
-                if (onBeds.includes(bed.dataset.bed)) {
-                    bed.classList.add('on');
-                } else {
-                    bed.classList.remove('on');
+                if (bed.classList.contains('on')) {
+                    onBeds.push(bed.dataset.bed);
+                }
+            });
+            const newSnapshot = {
+                timestamp: new Date().getTime(),
+                state: onBeds
+            };
+            history.push(newSnapshot);
+            localStorage.setItem(storageKey, JSON.stringify(history));
+            updateTimePoints();
+        }
+
+        function displayState(snapshot) {
+            if (!snapshot) {
+                 beds.forEach(bed => bed.classList.remove('on'));
+                 return;
+            };
+            const onBeds = snapshot.state;
+            beds.forEach(bed => bed.classList.remove('on'));
+            onBeds.forEach(bedId => {
+                const bedToTurnOn = document.querySelector(`.bed[data-bed="${bedId}"]`);
+                if (bedToTurnOn) {
+                    bedToTurnOn.classList.add('on');
                 }
             });
         }
 
-        // 函數：當點擊床位時，不是直接修改畫面，而是通知伺服器
-        function handleBedClick(bedElement) {
-            // 模擬您的點擊邏輯來決定是否要發送更新
-            const isOn = bedElement.classList.contains('on');
-            const clickCount = parseInt(bedElement.dataset.clickCount || '0', 10);
-
-            let newClickCount = clickCount + 1;
-            let stateChanged = false;
-
-            if (newClickCount === 1 && !isOn) {
-                stateChanged = true;
-            } else if (newClickCount === 3 && isOn) {
-                stateChanged = true;
-                newClickCount = 0; // 重置
-            } else if (newClickCount >= 3) {
-                newClickCount = 0; // 重置
-            }
-            
-            bedElement.dataset.clickCount = newClickCount;
-            
-            // 只有在狀態應該改變時才通知伺服器
-            if (stateChanged) {
-                const currentOnBeds = [];
-                beds.forEach(b => {
-                    // 預測點擊後的狀態
-                    if (b === bedElement) { // 對於被點擊的床位
-                        if (!isOn) currentOnBeds.push(b.dataset.bed);
-                    } else { // 對於其他床位
-                        if (b.classList.contains('on')) currentOnBeds.push(b.dataset.bed);
-                    }
-                });
-
-                const newSnapshot = {
-                    timestamp: new Date().getTime(),
-                    state: currentOnBeds
-                };
-                // 發送事件到伺服器
-                socket.emit('bed-state-change', newSnapshot);
+        function loadLatestState() {
+            const history = getHistory();
+            if (history.length > 0) {
+                const latestSnapshot = history[history.length - 1];
+                displayState(latestSnapshot);
+            } else {
+                displayState(null); // 如果沒有歷史紀錄，確保所有燈都是滅的
             }
         }
 
-        // --- Socket.IO 事件監聽 ---
+        function updateTime() {
+            const now = new Date();
+            timeDisplay.textContent = now.toLocaleString();
+        }
 
-        // 1. 監聽來自伺服器的「狀態更新」廣播
-        socket.on('state-update', (snapshot) => {
-            console.log('收到伺服器廣播的最新狀態:', snapshot);
-            displayState(snapshot);
-        });
-
-        // --- 頁面元素事件綁定 ---
-
-        // 為每個床位綁定點擊事件
-        beds.forEach(bed => {
-            bed.addEventListener('click', () => {
-                handleBedClick(bed);
+        function updateTimePoints() {
+            const history = getHistory();
+            timePointSelect.innerHTML = '';
+            if (history.length === 0) {
+                timePointSelect.innerHTML = '<option>沒有歷史紀錄</option>';
+                return;
+            }
+            history.slice().reverse().forEach(snapshot => {
+                const option = document.createElement('option');
+                const recordTime = new Date(snapshot.timestamp);
+                option.value = snapshot.timestamp;
+                option.textContent = recordTime.toLocaleString();
+                timePointSelect.appendChild(option);
             });
-        });
+        }
+        
+        function initialize() {
+            loadLatestState();
+            updateTimePoints();
+            setInterval(updateTime, 1000);
 
-        // 為返回按鈕綁定點擊事件
-        backButton.addEventListener('click', () => {
-            // 發送「復原請求」到伺服器
-            socket.emit('undo-request');
-        });
+            beds.forEach(bed => {
+                let clickCount = 0;
+                if (bed.classList.contains('on')) {
+                    clickCount = 1;
+                }
 
+                bed.addEventListener('click', () => {
+                    clickCount++;
+                    let stateChanged = false; // 建立一個旗標，判斷狀態是否真的改變
+
+                    if (clickCount === 1) {
+                        bed.classList.add('on');
+                        stateChanged = true; // 狀態改變了
+                    } else if (clickCount === 3) {
+                        bed.classList.remove('on');
+                        clickCount = 0;
+                        stateChanged = true; // 狀態改變了
+                    }
+
+                    // 【優化】只有在狀態真的改變時，才儲存歷史紀錄
+                    if (stateChanged) {
+                        saveState();
+                    }
+                });
+            });
+
+            timePointSelect.addEventListener('change', (event) => {
+                const selectedTimestamp = Number(event.target.value);
+                if (!selectedTimestamp) return;
+                const history = getHistory();
+                const foundSnapshot = history.find(s => s.timestamp === selectedTimestamp);
+                if (foundSnapshot) {
+                    displayState(foundSnapshot);
+                }
+            });
+
+            // 【功能修改】返回按鈕的全新 Undo 邏輯
+            backButton.addEventListener('click', () => {
+                let history = getHistory();
+                // 必須有超過一筆紀錄才能返回 (撤銷當前這筆，回到上一筆)
+                if (history.length > 0) {
+                    // 1. 移除最後一筆 (即當前) 的歷史紀錄
+                    history.pop();
+                    
+                    // 2. 將被縮短了的歷史紀錄存回 localStorage
+                    localStorage.setItem(storageKey, JSON.stringify(history));
+                    
+                    // 3. 載入並顯示新的「最後一筆」紀錄 (也就是返回後的狀態)
+                    loadLatestState();
+                    
+                    // 4. 更新下拉選單，移除剛剛被刪除的選項
+                    updateTimePoints();
+                } else {
+                    alert('已經是第一步，無法再返回。');
+                }
+            });
+        }
+
+        initialize();
     </script>
 </body>
 </html>
