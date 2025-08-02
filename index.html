@@ -145,7 +145,7 @@
     </script>
 </body>
 </html>
-    <!-- HTML 結構保持不變 -->
+  <!-- HTML 結構保持不變 -->
     <!-- Team 1 -->
     <div class="team">
         <h2>Team 1</h2>
@@ -167,8 +167,114 @@
             <div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div>
         </div>
     </div>
-        </script>
+
+    <script>
+        const beds = document.querySelectorAll('.bed');
+        const timeDisplay = document.getElementById('time');
+        const timePointSelect = document.getElementById('time-point');
+        const backButton = document.getElementById('back');
+        const storageKey = 'bedSystemHistory';
+
+        function getHistory() {
+            const historyJSON = localStorage.getItem(storageKey);
+            return historyJSON ? JSON.parse(historyJSON) : [];
+        }
+
+        function saveState() {
+            const history = getHistory();
+            const onBeds = [];
+            beds.forEach(bed => {
+                if (bed.classList.contains('on')) {
+                    onBeds.push(bed.dataset.bed);
+                }
+            });
+            const newSnapshot = {
+                timestamp: new Date().getTime(),
+                state: onBeds
+            };
+            history.push(newSnapshot);
+            localStorage.setItem(storageKey, JSON.stringify(history));
+            updateTimePoints();
+        }
+
+        function displayState(snapshot) {
+            if (!snapshot) {
+                 beds.forEach(bed => bed.classList.remove('on'));
+                 return;
+            };
+            const onBeds = snapshot.state;
+            beds.forEach(bed => bed.classList.remove('on'));
+            onBeds.forEach(bedId => {
+                const bedToTurnOn = document.querySelector(`.bed[data-bed="${bedId}"]`);
+                if (bedToTurnOn) {
+                    bedToTurnOn.classList.add('on');
+                }
+            });
+        }
+
+        function loadLatestState() {
+            const history = getHistory();
+            if (history.length > 0) {
+                const latestSnapshot = history[history.length - 1];
+                displayState(latestSnapshot)
+        }
+function updateTimePoints() {
+            const history = getHistory();
+            timePointSelect.innerHTML = '';
+            if (history.length === 0) {
+                timePointSelect.innerHTML = '<option>沒有歷史紀錄</option>';
+                return;
+            }
+            history.slice().reverse().forEach(snapshot => {
+                const option = document.createElement('option');
+                const recordTime = new Date(snapshot.timestamp);
+                option.value = snapshot.timestamp;
+                option.textContent = recordTime.toLocaleString();
+                timePointSelect.appendChild(option);
+            });
+        }
+        
+        function initialize() {
+            loadLatestState();
+            updateTimePoints();
+            setInterval(updateTime, 1000);
+
+            beds.forEach(bed => {
+                let clickCount = 0;
+                if (bed.classList.contains('on')) {
+                    clickCount = 1;
+                }
+
+                bed.addEventListener('click', () => {
+                    clickCount++;
+                    let stateChanged = false; // 建立一個旗標，判斷狀態是否真的改變
+
+                    if (clickCount === 1) {
+                        bed.classList.add('on');
+                        stateChanged = true; // 狀態改變了
+                    } else if (clickCount === 3) {
+                        bed.classList.remove('on');
+                        clickCount = 0;
+                        stateChanged = true; // 狀態改變了
+                    }
+
+                    // 【優化】只有在狀態真的改變時，才儲存歷史紀錄
+                    if (stateChanged) {
+                        saveState();
+                    }
+                });
+            });
+
+            timePointSelect.addEventListener('change', (event) => {
+                const selectedTimestamp = Number(event.target.value);
+                if (!selectedTimestamp) return;
+                const history = getHistory();
+                const foundSnapshot = history.find(s => s.timestamp === selectedTimestamp);
+                if (foundSnapshot) {
+                    displayState(foundSnapshot);
+                }
+        }
+    </script>
 </body>
 </html>
-
    
