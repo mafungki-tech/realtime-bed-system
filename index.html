@@ -5,76 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1A IV Cap</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        #controls {
-            margin-bottom: 20px;
-        }
-        .team {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #fff;
-        }
-        #bed-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-        }
-        .bed {
-            cursor: pointer;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            transition: all 0.3s;
-            font-size: 20px;
-            user-select: none;
-        }
-        .bed.on {
-            background-color: yellow;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        #back {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            /* 【修改】按鈕顏色已改為灰色 */
-            background-color: #6c757d; 
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #back:hover {
-            background-color: #5a6268;
-        }
-        #update-time {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
-        }
-        #time-selector {
-            margin-top: 10px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px; }
+        h1 { margin-bottom: 20px; }
+        #controls { margin-bottom: 20px; }
+        .team { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
+        #bed-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+        .bed { cursor: pointer; padding: 20px; border-radius: 10px; background-color: #fff; border: 1px solid #ccc; transition: all 0.3s; font-size: 20px; user-select: none; }
+        .bed.on { background-color: yellow; font-size: 24px; font-weight: bold; }
+        #back { margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #back:hover { background-color: #5a6268; }
     </style>
 </head>
 <body>
-
-    <h1>1A IV Cap</h1>
-
+    <h1>1A IV cap</h1>
     <div id="controls">
-        <!-- 【修改】按鈕文字已更新，以反映新功能 -->
         <button id="back">🔙 回到上一步 (Undo)</button>
         <div id="time-selector">
             <label for="time-point">查看歷史狀態: </label>
@@ -84,7 +28,15 @@
         </div>
         <div id="update-time">當前時間: <span id="time"></span></div>
     </div>
-  <script src="/socket.io/socket.io.js"></script>
+    </div>
+    <!-- Team 1 -->
+    <div class="team"><h2>Team 1</h2><div id="bed-list"><div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div></div></div>
+    <!-- Team 2 -->
+    <div class="team"><h2>Team 2</h2><div id="bed-list"><div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div></div></div>
+    <!-- Team 3 -->
+    <div class="team"><h2>Team 3</h2><div id="bed-list"><div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div></div></div>
+    
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         const beds = document.querySelectorAll('.bed');
@@ -145,136 +97,3 @@
     </script>
 </body>
 </html>
-  <!-- HTML 結構保持不變 -->
-    <!-- Team 1 -->
-    <div class="team">
-        <h2>Team 1</h2>
-        <div id="bed-list">
-            <div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div>
-        </div>
-    </div>
-    <!-- Team 2 -->
-    <div class="team">
-        <h2>Team 2</h2>
-        <div id="bed-list">
-            <div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div>
-        </div>
-    </div>
-    <!-- Team 3 -->
-    <div class="team">
-        <h2>Team 3</h2>
-        <div id="bed-list">
-            <div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div>
-        </div>
-    </div>
-
-    <script>
-        const beds = document.querySelectorAll('.bed');
-        const timeDisplay = document.getElementById('time');
-        const timePointSelect = document.getElementById('time-point');
-        const backButton = document.getElementById('back');
-        const storageKey = 'bedSystemHistory';
-
-        function getHistory() {
-            const historyJSON = localStorage.getItem(storageKey);
-            return historyJSON ? JSON.parse(historyJSON) : [];
-        }
-
-        function saveState() {
-            const history = getHistory();
-            const onBeds = [];
-            beds.forEach(bed => {
-                if (bed.classList.contains('on')) {
-                    onBeds.push(bed.dataset.bed);
-                }
-            });
-            const newSnapshot = {
-                timestamp: new Date().getTime(),
-                state: onBeds
-            };
-            history.push(newSnapshot);
-            localStorage.setItem(storageKey, JSON.stringify(history));
-            updateTimePoints();
-        }
-
-        function displayState(snapshot) {
-            if (!snapshot) {
-                 beds.forEach(bed => bed.classList.remove('on'));
-                 return;
-            };
-            const onBeds = snapshot.state;
-            beds.forEach(bed => bed.classList.remove('on'));
-            onBeds.forEach(bedId => {
-                const bedToTurnOn = document.querySelector(`.bed[data-bed="${bedId}"]`);
-                if (bedToTurnOn) {
-                    bedToTurnOn.classList.add('on');
-                }
-            });
-        }
-
-        function loadLatestState() {
-            const history = getHistory();
-            if (history.length > 0) {
-                const latestSnapshot = history[history.length - 1];
-                displayState(latestSnapshot)
-        }
-function updateTimePoints() {
-            const history = getHistory();
-            timePointSelect.innerHTML = '';
-            if (history.length === 0) {
-                timePointSelect.innerHTML = '<option>沒有歷史紀錄</option>';
-                return;
-            }
-            history.slice().reverse().forEach(snapshot => {
-                const option = document.createElement('option');
-                const recordTime = new Date(snapshot.timestamp);
-                option.value = snapshot.timestamp;
-                option.textContent = recordTime.toLocaleString();
-                timePointSelect.appendChild(option);
-            });
-        }
-        
-        function initialize() {
-            loadLatestState();
-            updateTimePoints();
-            setInterval(updateTime, 1000);
-
-            beds.forEach(bed => {
-                let clickCount = 0;
-                if (bed.classList.contains('on')) {
-                    clickCount = 1;
-                }
-
-                bed.addEventListener('click', () => {
-                    clickCount++;
-                    let stateChanged = false; // 建立一個旗標，判斷狀態是否真的改變
-
-                    if (clickCount === 1) {
-                        bed.classList.add('on');
-                        stateChanged = true; // 狀態改變了
-                    } else if (clickCount === 3) {
-                        bed.classList.remove('on');
-                        clickCount = 0;
-                        stateChanged = true; // 狀態改變了
-                    }
-
-                    // 【優化】只有在狀態真的改變時，才儲存歷史紀錄
-                    if (stateChanged) {
-                        saveState();
-                    }
-                });
-            });
-
-            timePointSelect.addEventListener('change', (event) => {
-                const selectedTimestamp = Number(event.target.value);
-                if (!selectedTimestamp) return;
-                const history = getHistory();
-                const foundSnapshot = history.find(s => s.timestamp === selectedTimestamp);
-                if (foundSnapshot) {
-                    displayState(foundSnapshot);
-                }
-        }
-    </script>
-</body>
-</html>
-   
