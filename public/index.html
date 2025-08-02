@@ -171,7 +171,7 @@
                 alert('系統已鎖定，請先點擊 🔓 按鈕解鎖。');
                 return;
             }
-            if (confirm('您確定要撤銷上一步操作嗎？這將影響所有用戶。')) {
+             {
                 socket.emit('undo');
             }
         });
@@ -233,7 +233,7 @@
                 if (clickCount === 1 && !bed.classList.contains('on')) {
                     bed.classList.add('on');
                     stateChanged = true;
-                } else if (clickCount === 3 && bed.classList.contains('on')) {
+                } else if (clickCount === 2 && bed.classList.contains('on')) {
                     bed.classList.remove('on');
                     clickCount = 0;
                     stateChanged = true;
