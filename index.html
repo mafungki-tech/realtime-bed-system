@@ -84,7 +84,67 @@
         </div>
         <div id="update-time">當前時間: <span id="time"></span></div>
     </div>
-
+  <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const beds = document.querySelectorAll('.bed');
+        const backButton = document.getElementById('back');
+        function displayState(snapshot) {
+            if (!snapshot || !snapshot.state) return;
+            const onBeds = snapshot.state;
+            beds.forEach(bed => {
+                if (onBeds.includes(bed.dataset.bed)) {
+                    bed.classList.add('on');
+                } else {
+                    bed.classList.remove('on');
+                }
+            });
+        }
+        function handleBedClick(bedElement) {
+            const isOn = bedElement.classList.contains('on');
+            const clickCount = parseInt(bedElement.dataset.clickCount || '0', 10);
+            let newClickCount = clickCount + 1;
+            let stateChanged = false;
+            if (newClickCount === 1 && !isOn) {
+                stateChanged = true;
+            } else if (newClickCount === 3 && isOn) {
+                stateChanged = true;
+                newClickCount = 0;
+            } else if (newClickCount >= 3) {
+                newClickCount = 0;
+            }
+            bedElement.dataset.clickCount = newClickCount;
+            if (stateChanged) {
+                const currentOnBeds = [];
+                beds.forEach(b => {
+                    if (b === bedElement) {
+                        if (!isOn) currentOnBeds.push(b.dataset.bed);
+                    } else {
+                        if (b.classList.contains('on')) currentOnBeds.push(b.dataset.bed);
+                    }
+                });
+                const newSnapshot = {
+                    timestamp: new Date().getTime(),
+                    state: currentOnBeds
+                };
+                socket.emit('bed-state-change', newSnapshot);
+            }
+        }
+        socket.on('state-update', (snapshot) => {
+            console.log('收到伺服器廣播的最新狀態:', snapshot);
+            displayState(snapshot);
+        });
+        beds.forEach(bed => {
+            bed.addEventListener('click', () => {
+                handleBedClick(bed);
+            });
+        });
+        backButton.addEventListener('click', () => {
+            socket.emit('undo-request');
+        });
+    </script>
+</body>
+</html>
     <!-- HTML 結構保持不變 -->
     <!-- Team 1 -->
     <div class="team">
@@ -157,9 +217,6 @@
             if (history.length > 0) {
                 const latestSnapshot = history[history.length - 1];
                 displayState(latestSnapshot);
-            } else {
-                displayState(null); // 如果沒有歷史紀錄，確保所有燈都是滅的
-            }
         }
 
         function updateTime() {
