@@ -1,97 +1,220 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IV Cap</title>
+    <title>即時床位管理系統</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px; }
-        h1 { margin-bottom: 20px; }
-        #controls { margin-bottom: 20px; }
-        .team { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
-        #bed-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
-        .bed { cursor: pointer; padding: 20px; border-radius: 10px; background-color: #fff; border: 1px solid #ccc; transition: all 0.3s; font-size: 20px; user-select: none; }
-        .bed.on { background-color: yellow; font-size: 24px; font-weight: bold; }
-        #back { margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #back:hover { background-color: #5a6268; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1a237e;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .bed {
+            width: 150px;
+            height: 120px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bed-id {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .bed-status {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .timestamp {
+            font-size: 0.7em;
+            color: #666;
+        }
+        .available { background-color: #c8e6c9; border-left: 5px solid #4caf50; }
+        .occupied { background-color: #ffcdd2; border-left: 5px solid #f44336; }
+        .cleaning { background-color: #bbdefb; border-left: 5px solid #2196f3; }
+        
+        /* 新增歷史紀錄區域的樣式 */
+        h2 {
+            margin-top: 40px;
+            color: #1a237e;
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+        #history-log-container {
+            width: 100%;
+            max-width: 800px;
+            height: 300px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-y: auto; /* 內容超出時顯示滾動條 */
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        #history-log-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #history-log-list li {
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        #history-log-list li:first-child {
+            font-weight: bold;
+            background-color: #e3f2fd;
+        }
+        #history-log-list li .log-time {
+            color: #555;
+            margin-right: 15px;
+        }
+        #history-log-list li .log-detail {
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <h1>IV Cap</Caption></h1>
-    <div id="controls">
-        <button id="back">🔙 回到上一步 (Undo)</button>
-            <div id="time-selector">
-            <label for="time-point">查看歷史狀態: </label>
-            <select id="time-point">
-                <option>沒有歷史紀錄</option>
-            </select>
+
+    <h1>即時床位管理系統</h1>
+    <div id="bed-container" class="container"></div>
+
+    <h2>操作歷史紀錄</h2>
+    <div id="history-log-container">
+        <ul id="history-log-list"></ul>
     </div>
-    <div id="update-time">當前時間: <span id="time"></span></div>
-    </div>
-    <!-- Team 1 -->
-    <div class="team"><h2>Team 1</h2><div id="bed-list"><div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div></div></div>
-    <!-- Team 2 -->
-    <div class="team"><h2>Team 2</h2><div id="bed-list"><div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div></div></div>
-    <!-- Team 3 -->
-    <div class="team"><h2>Team 3</h2><div id="bed-list"><div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div></div></div>
-    
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const beds = document.querySelectorAll('.bed');
-        const backButton = document.getElementById('back');
-        function displayState(snapshot) {
-            if (!snapshot || !snapshot.state) return;
-            const onBeds = snapshot.state;
-            beds.forEach(bed => {
-                if (onBeds.includes(bed.dataset.bed)) {
-                    bed.classList.add('on');
-                } else {
-                    bed.classList.remove('on');
-                }
-            });
+        const bedContainer = document.getElementById('bed-container');
+        const historyLogList = document.getElementById('history-log-list');
+        const totalBeds = 20;
+
+        // 輔助函式：格式化日期時間
+        function formatTimestamp(dateString) {
+            const date = new Date(dateString);
+            const Y = date.getFullYear();
+            const M = String(date.getMonth() + 1).padStart(2, '0');
+            const D = String(date.getDate()).padStart(2, '0');
+            const h = String(date.getHours()).padStart(2, '0');
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const s = String(date.getSeconds()).padStart(2, '0');
+            return `${Y}-${M}-${D} ${h}:${m}:${s}`;
         }
-        function handleBedClick(bedElement) {
-            const isOn = bedElement.classList.contains('on');
-            const clickCount = parseInt(bedElement.dataset.clickCount || '0', 10);
-            let newClickCount = clickCount + 1;
-            let stateChanged = false;
-            if (newClickCount === 1 && !isOn) {
-                stateChanged = true;
-            } else if (newClickCount === 3 && isOn) {
-                stateChanged = true;
-                newClickCount = 0;
-            } else if (newClickCount >= 3) {
-                newClickCount = 0;
+        
+        // 輔助函式：將狀態英文轉為中文
+        function translateStatus(status) {
+            const map = {
+                'available': '可用',
+                'occupied': '已佔用',
+                'cleaning': '清潔中'
+            };
+            return map[status] || status;
+        }
+
+        // 輔助函式：在歷史紀錄列表中新增一條紀錄
+        function addHistoryEntry(log, prepend = false) {
+            const li = document.createElement('li');
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.textContent = `[${formatTimestamp(log.timestamp)}]`;
+
+            const detailSpan = document.createElement('span');
+            detailSpan.className = 'log-detail';
+            detailSpan.textContent = `床位 ${log.bedId} 狀態更新為：${translateStatus(log.newStatus)}`;
+            
+            li.appendChild(timeSpan);
+            li.appendChild(detailSpan);
+
+            if (prepend) {
+                historyLogList.prepend(li); // 將最新的紀錄加到最前面
+            } else {
+                historyLogList.appendChild(li); // 初始加載時使用
             }
-            bedElement.dataset.clickCount = newClickCount;
-            if (stateChanged) {
-                const currentOnBeds = [];
-                beds.forEach(b => {
-                    if (b === bedElement) {
-                        if (!isOn) currentOnBeds.push(b.dataset.bed);
-                    } else {
-                        if (b.classList.contains('on')) currentOnBeds.push(b.dataset.bed);
+        }
+
+        // 1. 監聽來自伺服器的 'initialStatus' 事件，初始化所有床位
+        socket.on('initialStatus', (bedStatus) => {
+            bedContainer.innerHTML = ''; // 清空容器
+            Object.keys(bedStatus).sort((a,b) => a - b).forEach(bedId => {
+                const bedData = bedStatus[bedId];
+                const bedDiv = document.createElement('div');
+                bedDiv.className = `bed ${bedData.status}`;
+                bedDiv.id = `bed-${bedId}`;
+                
+                bedDiv.innerHTML = `
+                    <div class="bed-id">${bedId}</div>
+                    <div class="bed-status">${translateStatus(bedData.status)}</div>
+                    <small class="timestamp">${formatTimestamp(bedData.timestamp)}</small>
+                `;
+
+                bedDiv.addEventListener('click', () => {
+                    const currentStatus = bedDiv.classList.contains('available') ? 'available' :
+                                          bedDiv.classList.contains('occupied') ? 'occupied' : 'cleaning';
+                    const newStatus = prompt(`請輸入床位 ${bedId} 的新狀態 (available, occupied, cleaning):`, currentStatus);
+                    if (newStatus && ['available', 'occupied', 'cleaning'].includes(newStatus)) {
+                        socket.emit('changeStatus', { bedId, newStatus });
                     }
                 });
-                const newSnapshot = {
-                    timestamp: new Date().getTime(),
-                    state: currentOnBeds
-                };
-                socket.emit('bed-state-change', newSnapshot);
-            }
-        }
-        socket.on('state-update', (snapshot) => {
-            console.log('收到伺服器廣播的最新狀態:', snapshot);
-            displayState(snapshot);
-        });
-        beds.forEach(bed => {
-            bed.addEventListener('click', () => {
-                handleBedClick(bed);
+                bedContainer.appendChild(bedDiv);
             });
         });
-        backButton.addEventListener('click', () => {
-            socket.emit('undo-request');
+
+        // 2. 監聽 'statusChange' 事件，更新單個床位的狀態和時間
+        socket.on('statusChange', (data) => {
+            const { bedId, newStatus, timestamp } = data;
+            const bedDiv = document.getElementById(`bed-${bedId}`);
+            if (bedDiv) {
+                bedDiv.className = `bed ${newStatus}`;
+                bedDiv.querySelector('.bed-status').textContent = translateStatus(newStatus);
+                bedDiv.querySelector('.timestamp').textContent = formatTimestamp(timestamp);
+            }
+        });
+
+        // 3. 監聽 'historyLog' 事件，加載完整的歷史紀錄
+        socket.on('historyLog', (logs) => {
+            historyLogList.innerHTML = ''; // 清空現有列表
+            logs.forEach(log => {
+                addHistoryEntry(log, false); // 按照伺服器給的順序添加
+            });
+        });
+
+        // 4. 監聽 'newHistoryEntry' 事件，即時添加最新的歷史紀錄到頂部
+        socket.on('newHistoryEntry', (log) => {
+            addHistoryEntry(log, true); // 將新紀錄插入到列表頂部
+            
+            // 移除最舊的紀錄如果列表太長
+            if (historyLogList.children.length > 100) {
+                historyLogList.removeChild(historyLogList.lastChild);
+            }
         });
     </script>
 </body>
