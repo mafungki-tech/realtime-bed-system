@@ -1,99 +1,274 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1A IV Cap</title>
+    <title>即時床位管理系統</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px; }
-        h1 { margin-bottom: 20px; }
-        #controls { margin-bottom: 20px; }
-        .team { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
-        #bed-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
-        .bed { cursor: pointer; padding: 20px; border-radius: 10px; background-color: #fff; border: 1px solid #ccc; transition: all 0.3s; font-size: 20px; user-select: none; }
-        .bed.on { background-color: yellow; font-size: 24px; font-weight: bold; }
-        #back { margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #back:hover { background-color: #5a6268; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .main-content {
+            flex: 3;
+            min-width: 300px;
+        }
+        .sidebar {
+            flex: 1;
+            min-width: 280px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        #bed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #bed-grid.locked {
+            opacity: 0.6;
+            pointer-events: none; /* 讓鎖定時無法點擊 */
+        }
+        .bed {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .bed.available { background-color: #d4edda; color: #155724; }
+        .bed.occupied { background-color: #f8d7da; color: #721c24; }
+        .bed.cleaning { background-color: #fff3cd; color: #856404; }
+        .bed:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #history-log {
+            list-style-type: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #history-log li {
+            background-color: #ecf0f1;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status-info {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* --- 新增功能按鈕的樣式 --- */
+        #control-panel {
+            position: fixed; /* 固定位置 */
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000; /* 確保在最上層 */
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            background-color: rgba(44, 62, 80, 0.8); /* 半透明灰色背景 */
+            color: white;
+            border: none;
+            border-radius: 50%; /* 圓形按鈕 */
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .control-btn:hover {
+            background-color: rgba(44, 62, 80, 1); /* 滑過時變實色 */
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
-    <h1>1A IV cap</h1>
-    <div id="controls">
-        <button id="back">🔙 回到上一步 (Undo)</button>
-        <div id="time-selector">
-            <label for="time-point">查看歷史狀態: </label>
-            <select id="time-point">
-                <option>沒有歷史紀錄</option>
-            </select>
+
+    <div class="container">
+        <div class="main-content">
+            <h1>即時床位狀態</h1>
+            <div id="bed-grid" class="locked">
+                <!-- 床位將由 JavaScript 動態生成 -->
+            </div>
         </div>
-        <div id="update-time">當前時間: <span id="time"></span></div>
+        <div class="sidebar">
+            <div class="status-info">
+                <h2>系統資訊</h2>
+                <p>最後更新時間: <strong id="update-time">正在獲取...</strong></p>
+            </div>
+            <h2>歷史紀錄 (近24小時)</h2>
+            <ul id="history-log">
+                <!-- 歷史紀錄將由 JavaScript 動態生成 -->
+            </ul>
+        </div>
     </div>
+
+    <!-- 控制按鈕面板 -->
+    <div id="control-panel">
+        <button id="lock-btn" class="control-btn">🔒</button>
+        <button id="undo-btn" class="control-btn">↩️</button>
     </div>
-    <!-- Team 1 -->
-    <div class="team"><h2>Team 1</h2><div id="bed-list"><div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div></div></div>
-    <!-- Team 2 -->
-    <div class="team"><h2>Team 2</h2><div id="bed-list"><div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div></div></div>
-    <!-- Team 3 -->
-    <div class="team"><h2>Team 3</h2><div id="bed-list"><div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div></div></div>
-    
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const beds = document.querySelectorAll('.bed');
-        const backButton = document.getElementById('back');
-        function displayState(snapshot) {
-            if (!snapshot || !snapshot.state) return;
-            const onBeds = snapshot.state;
-            beds.forEach(bed => {
-                if (onBeds.includes(bed.dataset.bed)) {
-                    bed.classList.add('on');
-                } else {
-                    bed.classList.remove('on');
+
+        const bedGrid = document.getElementById('bed-grid');
+        const historyLog = document.getElementById('history-log');
+        const updateTimeEl = document.getElementById('update-time');
+        const undoBtn = document.getElementById('undo-btn');
+        const lockBtn = document.getElementById('lock-btn');
+
+        // --- 本地鎖定功能邏輯 ---
+        let isLocked = true;
+        let lockTimer = null;
+        const LOCK_TIMEOUT = 45 * 60 * 1000; // 45分鐘
+
+        function setLockState(locked) {
+            isLocked = locked;
+            if (isLocked) {
+                bedGrid.classList.add('locked');
+                lockBtn.textContent = '🔒';
+                // 如果是手動或計時器鎖定，清除計時器
+                if (lockTimer) {
+                    clearTimeout(lockTimer);
+                    lockTimer = null;
                 }
-            });
-        }
-        function handleBedClick(bedElement) {
-            const isOn = bedElement.classList.contains('on');
-            const clickCount = parseInt(bedElement.dataset.clickCount || '0', 10);
-            let newClickCount = clickCount + 1;
-            let stateChanged = false;
-            if (newClickCount === 1 && !isOn) {
-                stateChanged = true;
-            } else if (newClickCount === 3 && isOn) {
-                stateChanged = true;
-                newClickCount = 0;
-            } else if (newClickCount >= 3) {
-                newClickCount = 0;
+            } else {
+                bedGrid.classList.remove('locked');
+                lockBtn.textContent = '🔓';
+                // 解鎖後，啟動45分鐘自動鎖定計時器
+                lockTimer = setTimeout(() => {
+                    setLockState(true);
+                    alert('系統已閒置超過45分鐘，為安全起見已自動鎖定。');
+                }, LOCK_TIMEOUT);
             }
-            bedElement.dataset.clickCount = newClickCount;
-            if (stateChanged) {
-                const currentOnBeds = [];
-                beds.forEach(b => {
-                    if (b === bedElement) {
-                        if (!isOn) currentOnBeds.push(b.dataset.bed);
-                    } else {
-                        if (b.classList.contains('on')) currentOnBeds.push(b.dataset.bed);
+        }
+
+        lockBtn.addEventListener('click', () => {
+            setLockState(!isLocked);
+        });
+        // --- 鎖定功能結束 ---
+
+        const statuses = ['available', 'occupied', 'cleaning'];
+        const statusMap = {
+            'available': '可用',
+            'occupied': '已佔用',
+            'cleaning': '清潔中'
+        };
+
+        // 監聽來自伺服器的初始狀態
+        socket.on('initialStatus', (data) => {
+            bedGrid.innerHTML = ''; // 清空現有床位
+            Object.keys(data.beds).sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])).forEach(bedId => {
+                createOrUpdateBed(bedId, data.beds[bedId]);
+            });
+            updateHistory(data.history);
+            updateTime(data.time);
+        });
+
+        // 監聽單個床位狀態更新
+        socket.on('statusUpdate', (data) => {
+            createOrUpdateBed(data.bedId, data.newStatus);
+        });
+
+        // 監聽歷史紀錄更新
+        socket.on('updateHistory', (newHistory) => {
+            updateHistory(newHistory);
+        });
+
+        // 監聽時間更新
+        socket.on('updateTime', (newTime) => {
+            updateTime(newTime);
+        });
+
+        function createOrUpdateBed(bedId, status) {
+            let bed = document.getElementById(bedId);
+            if (!bed) {
+                bed = document.createElement('div');
+                bed.id = bedId;
+                bed.classList.add('bed');
+                bed.addEventListener('click', () => {
+                    if (isLocked) {
+                        alert('系統已鎖定，請先點擊右下角的 🔓 按鈕解鎖。');
+                        return;
                     }
+                    const currentStatus = bed.dataset.status;
+                    const currentIndex = statuses.indexOf(currentStatus);
+                    const nextIndex = (currentIndex + 1) % statuses.length;
+                    const newStatus = statuses[nextIndex];
+                    
+                    // 發送狀態變更到伺服器
+                    socket.emit('changeStatus', { bedId, newStatus, oldStatus: currentStatus });
                 });
-                const newSnapshot = {
-                    timestamp: new Date().getTime(),
-                    state: currentOnBeds
-                };
-                socket.emit('bed-state-change', newSnapshot);
+                bedGrid.appendChild(bed);
             }
+            bed.className = 'bed'; // 重置 class
+            bed.classList.add(status);
+            bed.dataset.status = status;
+            bed.textContent = `床位 ${bedId.split('-')[1]}`;
         }
-        socket.on('state-update', (snapshot) => {
-            console.log('收到伺服器廣播的最新狀態:', snapshot);
-            displayState(snapshot);
-        });
-        beds.forEach(bed => {
-            bed.addEventListener('click', () => {
-                handleBedClick(bed);
+
+        function updateHistory(logData) {
+            historyLog.innerHTML = '';
+            logData.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = `[${entry.timeString}] 床位 ${entry.bedId.split('-')[1]}: ${statusMap[entry.oldStatus]} -> ${statusMap[entry.newStatus]}`;
+                historyLog.appendChild(li);
             });
+        }
+
+        function updateTime(timeString) {
+            updateTimeEl.textContent = timeString;
+        }
+
+        // Undo 按鈕功能
+        undoBtn.addEventListener('click', () => {
+            if (isLocked) {
+                alert('系統已鎖定，請先點擊右下角的 🔓 按鈕解鎖。');
+                return;
+            }
+            if (confirm('您確定要撤銷上一步操作嗎？')) {
+                socket.emit('undo');
+            }
         });
-        backButton.addEventListener('click', () => {
-            socket.emit('undo-request');
-        });
+
+        // 初始載入時，保持鎖定狀態
+        setLockState(true);
     </script>
 </body>
 </html>
