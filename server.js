@@ -9,16 +9,24 @@ const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
 
-// 將資料儲存在伺服器記憶體中
-let bedStatus = {}; // 儲存每個床位的狀態 { 'bed-1': 'occupied', ... }
-let historyLog = []; // 儲存歷史操作紀錄
-let lastUpdateTime = new Date(); // 儲存最後更新時間
+// --- 伺服器端資料儲存 ---
+// bedState 的結構將是: { '1': 'on', '2': 'off', '19A': 'on', ... }
+let bedState = {}; 
+// historyLog 的結構將是: { timestamp: 123, state: {'1':'on', ...}, timeString: '...' }
+let historyLog = []; 
+let lastUpdateTime = new Date();
 
-// 初始化床位狀態 (如果需要預設值)
-for (let i = 1; i <= 20; i++) {
-    bedStatus[`bed-${i}`] = 'available';
-}
+// 初始化所有床位為 'off' 狀態
+const bedIds = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
+    '16', '17', '18', '19', '19A', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
+    '30', '31', '32', '33', '34', '34A', '35', '36', '36A', '37', '38', '39', '40', '41', '42', '43', '43A', '44'
+];
+bedIds.forEach(id => {
+    bedState[id] = 'off';
+});
 
+// 讓伺服器可以提供 public 資料夾中的靜態檔案 (例如 index.html)
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
@@ -28,64 +36,55 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('一個新用戶連接上了');
 
-    // 當新用戶連接時，立即發送當前的所有床位狀態、歷史紀錄和最後更新時間
-    socket.emit('initialStatus', {
-        beds: bedStatus,
+    // 1. 當新用戶連接時，立即發送當前的完整床位狀態和過濾後的歷史紀錄
+    socket.emit('initialState', {
+        state: bedState,
         history: historyLog,
         time: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
     });
 
-    // 監聽來自客戶端的狀態變更請求
-    socket.on('changeStatus', (data) => {
-        const { bedId, newStatus, oldStatus } = data;
-        
+    // 2. 監聽來自客戶端的狀態變更請求
+    socket.on('updateState', (newState) => {
         // 更新伺服器上的狀態
-        bedStatus[bedId] = newStatus;
+        bedState = newState;
         lastUpdateTime = new Date();
 
         // 建立一條新的歷史紀錄
         const logEntry = {
-            timestamp: Date.now(),
-            bedId: bedId,
-            oldStatus: oldStatus,
-            newStatus: newStatus,
+            timestamp: lastUpdateTime.getTime(),
+            state: { ...bedState }, // 儲存當前狀態的完整副本
             timeString: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
         };
         
-        // 將新紀錄添加到歷史紀錄的開頭
-        historyLog.unshift(logEntry);
+        historyLog.push(logEntry);
 
-        // **核心功能：過濾掉超過24小時的歷史紀錄**
+        // 過濾掉超過24小時的歷史紀錄
         const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
         historyLog = historyLog.filter(entry => entry.timestamp >= twentyFourHoursAgo);
 
-        // 向所有連接的客戶端廣播狀態更新
-        io.emit('statusUpdate', { bedId, newStatus });
-        
-        // 向所有客戶端廣播全新的歷史紀錄
-        io.emit('updateHistory', historyLog);
-
-        // 向所有客戶端廣播更新時間
-        io.emit('updateTime', lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' }));
+        // 向所有連接的客戶端廣播【完整的】新狀態
+        io.emit('stateChanged', {
+            state: bedState,
+            history: historyLog,
+            time: logEntry.timeString
+        });
     });
 
-    // 監聽來自客戶端的撤銷請求
+    // 3. 監聽來自客戶端的撤銷請求
     socket.on('undo', () => {
-        if (historyLog.length > 0) {
-            const lastAction = historyLog.shift(); // 移除並獲取最新的一條紀錄
-            
-            // 恢復到上一個狀態
-            bedStatus[lastAction.bedId] = lastAction.oldStatus;
-            lastUpdateTime = new Date();
+        // 必須有超過一筆紀錄才能撤銷 (回到上一筆)
+        if (historyLog.length > 1) {
+            historyLog.pop(); // 移除最新的一筆紀錄
+            const previousLog = historyLog[historyLog.length - 1];
+            bedState = previousLog.state; // 恢復到上一筆紀錄的狀態
+            lastUpdateTime = new Date(previousLog.timestamp);
 
-            // 廣播被恢復的床位狀態
-            io.emit('statusUpdate', { bedId: lastAction.bedId, newStatus: lastAction.oldStatus });
-            
-            // 廣播更新後的歷史紀錄 (已經移除了最後一條)
-            io.emit('updateHistory', historyLog);
-
-            // 廣播更新時間
-            io.emit('updateTime', lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' }));
+            // 廣播【完整的】恢復後狀態
+            io.emit('stateChanged', {
+                state: bedState,
+                history: historyLog,
+                time: lastUpdateTime.toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' })
+            });
         }
     });
 
