@@ -4,135 +4,375 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1A IV Cap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; padding: 20px; padding-bottom: 100px; }
-        h1 { margin-bottom: 20px; }
-        .team { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; }
-        .bed-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; transition: opacity 0.3s; }
-        .bed-container.locked { opacity: 0.5; pointer-events: none; }
-        .bed { cursor: pointer; padding: 20px; border-radius: 10px; background-color: #fff; border: 1px solid #ccc; transition: all 0.3s; font-size: 20px; user-select: none; }
-        .bed.on { background-color: yellow; font-size: 24px; font-weight: bold; }
-        #update-time-container { margin-bottom: 25px; font-size: 20px; color: #666; }
-        .control-btn { background-color: rgba(108, 117, 125, 0.8); color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 28px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.3s; position: fixed; z-index: 1000; }
-        .control-btn:hover { background-color: #5a6268; transform: scale(1.1); }
-        #lock-btn { bottom: 20px; right: 20px; }
+        .bed {
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        .bed.on {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .team-container {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 控制按鈕樣式 */
+        .control-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .control-btn:hover {
+            background-color: #b91c1c;
+            transform: scale(1.1);
+        }
+        
+        .control-btn.locked {
+            background-color: #4f46e5;
+        }
+        
+        .control-btn.locked:hover {
+            background-color: #3730a3;
+        }
     </style>
 </head>
-<body>
-
-    <h1>IV Cap</h1>
-    <div id="update-time-container">最後更新時間: <span id="time-display">正在連接伺服器...</span></div>
-
-    <!-- Team 1, 2, 3 的 HTML 結構完全不變 -->
-    <div class="team">
-        <h2>Team 1</h2>
-        <div class="bed-container" id="team1-beds">
-            <div class="bed" data-bed="1">1</div><div class="bed" data-bed="2">2</div><div class="bed" data-bed="3">3</div><div class="bed" data-bed="4">4</div><div class="bed" data-bed="5">5</div><div class="bed" data-bed="6">6</div><div class="bed" data-bed="7">7</div><div class="bed" data-bed="8">8</div><div class="bed" data-bed="9">9</div><div class="bed" data-bed="10">10</div><div class="bed" data-bed="11">11</div><div class="bed" data-bed="12">12</div><div class="bed" data-bed="13">13</div><div class="bed" data-bed="14">14</div><div class="bed" data-bed="15">15</div>
-        </div>
-    </div>
-    <div class="team">
-        <h2>Team 2</h2>
-        <div class="bed-container" id="team2-beds">
-            <div class="bed" data-bed="16">16</div><div class="bed" data-bed="17">17</div><div class="bed" data-bed="18">18</div><div class="bed" data-bed="19">19</div><div class="bed" data-bed="19A">19A</div><div class="bed" data-bed="20">20</div><div class="bed" data-bed="21">21</div><div class="bed" data-bed="22">22</div><div class="bed" data-bed="23">23</div><div class="bed" data-bed="24">24</div><div class="bed" data-bed="25">25</div><div class="bed" data-bed="26">26</div><div class="bed" data-bed="27">27</div><div class="bed" data-bed="28">28</div><div class="bed" data-bed="29">29</div>
-        </div>
-    </div>
-    <div class="team">
-        <h2>Team 3</h2>
-        <div class="bed-container" id="team3-beds">
-            <div class="bed" data-bed="30">30</div><div class="bed" data-bed="31">31</div><div class="bed" data-bed="32">32</div><div class="bed" data-bed="33">33</div><div class="bed" data-bed="34">34</div><div class="bed" data-bed="34A">34A</div><div class="bed" data-bed="35">35</div><div class="bed" data-bed="36">36</div><div class="bed" data-bed="36A">36A</div><div class="bed" data-bed="37">37</div><div class="bed" data-bed="38">38</div><div class="bed" data-bed="39">39</div><div class="bed" data-bed="40">40</div><div class="bed" data-bed="41">41</div><div class="bed" data-bed="42">42</div><div class="bed" data-bed="43">43</div><div class="bed" data-bed="43A">43A</div><div class="bed" data-bed="44">44</div>
-        </div>
-    </div>
-
-    <!-- 【修改】只保留鎖定按鈕 -->
-    <button id="lock-btn" class="control-btn">🔒</button>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans">
     
-    <!-- 【移除】所有歷史紀錄相關的 HTML -->
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-indigo-800 mb-8">🏥 1A IV cap</h1>
 
-    <script src="/socket.io/socket.io.js"></script>
+        <!-- 控制面板 -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <div class="text-gray-600">
+                    <span class="font-medium">有IV cap 病人人數:</span> <span id="total-used" class="text-red-600 font-bold text-xl">0</span>
+                </div>
+                <div class="text-gray-600">
+                    <span class="font-medium">最後更新時間:</span> <span id="last-update" class="text-green-600 font-mono">尚未更新</span>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <div class="inline-flex items-center gap-4 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-white border border-gray-300 rounded"></div>
+                        <span>No IV Cap</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+                        <span>with IV cap</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team 1 -->
+        <div class="team-container bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">Team 1</h2>
+            <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-15 gap-3">
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="1">1</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="2">2</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="3">3</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="4">4</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="5">5</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="6">6</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="7">7</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="8">8</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="9">9</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="10">10</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="11">11</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="12">12</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="13">13</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="14">14</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-blue-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="15">15</div>
+            </div>
+        </div>
+
+        <!-- Team 2 -->
+        <div class="team-container bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-center text-green-700 mb-4">Team 2</h2>
+            <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-15 gap-3">
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="16">16</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="17">17</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="18">18</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="19">19</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="19A">19A</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="20">20</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="21">21</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="22">22</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="23">23</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="24">24</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="25">25</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="26">26</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="27">27</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="28">28</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-green-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="29">29</div>
+            </div>
+        </div>
+
+        <!-- Team 3 -->
+        <div class="team-container bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-center text-purple-700 mb-4">Team 3</h2>
+            <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-15 gap-3">
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="30">30</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="31">31</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="32">32</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="33">33</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="34">34</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="35">35</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="36">36</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="37">37</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="38">38</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="39">39</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="40">40</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="41">41</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="42">42</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="43">43</div>
+                <div class="bed bg-white border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 text-center cursor-pointer text-lg font-semibold" data-bed="44">44</div>
+            </div>
+        </div>
+
+        <!-- 統計資訊 -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">📊 使用統計</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-blue-600" id="team1-count">0</div>
+                    <div class="text-sm text-gray-600">Team 1 使用中</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-green-600" id="team2-count">0</div>
+                    <div class="text-sm text-gray-600">Team 2 使用中</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-purple-600" id="team3-count">0</div>
+                    <div class="text-sm text-gray-600">Team 3 使用中</div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-gray-600" id="total-count">0</div>
+                    <div class="text-sm text-gray-600">總計使用中</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控制按鈕 -->
+    <button id="back" class="control-btn bg-gray-600 hover:bg-gray-700" style="left: 20px; right: auto; background-color: #4b5563;">🔙</button>
+    <button id="lock-btn" class="control-btn">🔒</button>
+
     <script>
-        const socket = io();
-        const beds = document.querySelectorAll('.bed');
-        const allBedContainers = document.querySelectorAll('.bed-container');
-        const timeDisplay = document.getElementById('time-display');
-        const lockBtn = document.getElementById('lock-btn');
+        // 狀態管理
+        let bedStates = {};
+        let history = [];
+        let currentHistoryIndex = -1;
+        let isLocked = false;
 
-        // 本地鎖定功能 (不變)
-        let isLocked = true;
-        let lockTimer = null;
-        const LOCK_TIMEOUT = 45 * 60 * 1000;
+        // 初始化
+        function init() {
+            setupEventListeners();
+            updateStats();
+        }
 
-        function setLockState(locked) {
-            isLocked = locked;
-            if (isLocked) {
-                allBedContainers.forEach(c => c.classList.add('locked'));
-                lockBtn.textContent = '🔒';
-                if (lockTimer) clearTimeout(lockTimer);
-                lockTimer = null;
+        // 設置事件監聽器
+        function setupEventListeners() {
+            // 床位點擊事件
+            document.querySelectorAll('.bed').forEach(bed => {
+                bed.addEventListener('click', function() {
+                    toggleBed(this.dataset.bed);
+                });
+            });
+
+            // 控制按鈕事件
+            document.getElementById('back').addEventListener('click', undo);
+            document.getElementById('lock-btn').addEventListener('click', toggleLock);
+        }
+
+        // 切換床位狀態
+        function toggleBed(bedId) {
+            if (!isLocked) {
+                alert('系統未鎖定，編輯已禁用。請先鎖定系統才能修改床位狀態');
+                return;
+            }
+            
+            const bedElement = document.querySelector(`[data-bed="${bedId}"]`);
+            const wasOn = bedStates[bedId] || false;
+            
+            // 保存當前狀態到歷史記錄
+            saveToHistory();
+            
+            // 切換狀態
+            bedStates[bedId] = !wasOn;
+            
+            // 更新視覺效果
+            if (bedStates[bedId]) {
+                bedElement.classList.add('on');
+                bedElement.style.backgroundColor = '#fbbf24';
+                bedElement.style.fontWeight = 'bold';
+                bedElement.style.transform = 'scale(1.05)';
             } else {
-                allBedContainers.forEach(c => c.classList.remove('locked'));
+                bedElement.classList.remove('on');
+                bedElement.style.backgroundColor = 'white';
+                bedElement.style.fontWeight = 'normal';
+                bedElement.style.transform = 'scale(1)';
+            }
+            
+            // 更新最後更新時間
+            updateLastUpdateTime();
+            updateStats();
+        }
+
+        // 保存到歷史記錄
+        function saveToHistory() {
+            const currentState = {
+                states: {...bedStates},
+                timestamp: new Date().toLocaleString('zh-HK')
+            };
+            
+            // 如果不是在歷史記錄的末尾，則清除後面的記錄
+            if (currentHistoryIndex < history.length - 1) {
+                history = history.slice(0, currentHistoryIndex + 1);
+            }
+            
+            history.push(currentState);
+            currentHistoryIndex = history.length - 1;
+            
+            // 限制歷史記錄數量
+            if (history.length > 50) {
+                history.shift();
+                currentHistoryIndex--;
+            }
+            
+
+        }
+
+
+
+        // 切換鎖定狀態
+        function toggleLock() {
+            isLocked = !isLocked;
+            const lockBtn = document.getElementById('lock-btn');
+            
+            if (isLocked) {
+                // 系統已鎖定 - 顯示開鎖圖示，藍色背景 - 編輯已啟用
                 lockBtn.textContent = '🔓';
-                lockTimer = setTimeout(() => {
-                    setLockState(true);
-                    alert('系統已閒置超過45分鐘，為安全起見已自動鎖定。');
-                }, LOCK_TIMEOUT);
+                lockBtn.classList.add('locked');
+                lockBtn.title = '系統已鎖定，編輯已啟用 - 點擊解鎖';
+            } else {
+                // 系統未鎖定 - 顯示鎖定圖示，紅色背景 - 編輯已禁用
+                lockBtn.textContent = '🔒';
+                lockBtn.classList.remove('locked');
+                lockBtn.title = '系統未鎖定，編輯已禁用 - 點擊鎖定';
+            }
+            
+            // 更新控制按鈕的可用狀態
+            updateControlsState();
+        }
+        
+        // 更新控制按鈕狀態
+        function updateControlsState() {
+            const backBtn = document.getElementById('back');
+            
+            if (!isLocked) {
+                // 系統未鎖定時，編輯被禁用
+                backBtn.disabled = true;
+                backBtn.style.opacity = '0.5';
+                backBtn.style.cursor = 'not-allowed';
+                backBtn.style.pointerEvents = 'none';
+            } else {
+                // 系統鎖定時，編輯被啟用
+                backBtn.disabled = false;
+                backBtn.style.opacity = '1';
+                backBtn.style.cursor = 'pointer';
+                backBtn.style.pointerEvents = 'auto';
             }
         }
-        
-        lockBtn.addEventListener('click', () => setLockState(!isLocked));
-        
-        // 【移除】所有 'undo' 和 'revertToTimestamp' 的客戶端邏輯
 
-        // --- 【核心修改】極簡化的 UI 更新函數 ---
-        function updateUI(stateData) {
-            // stateData 現在是 { state: {...}, time: "..." }
+        // 撤銷操作
+        function undo() {
+            if (!isLocked) {
+                alert('系統未鎖定，編輯已禁用。請先鎖定系統才能執行此操作');
+                return;
+            }
             
-            // 更新床位狀態
-            beds.forEach(bed => {
-                const bedId = bed.dataset.bed;
-                if (stateData.state && stateData.state[bedId] === 'on') {
-                    bed.classList.add('on');
-                } else {
-                    bed.classList.remove('on');
-                }
-            });
-
-            // 更新時間顯示
-            timeDisplay.textContent = stateData.time;
-
-            // 【移除】所有更新歷史紀錄列表和下拉選單的程式碼
-        }
-
-        // Socket.IO 事件監聽
-        socket.on('initialState', (data) => updateUI(data));
-        socket.on('stateChanged', (data) => updateUI(data));
-        socket.on('error_message', (msg) => alert(msg)); // 監聽錯誤訊息
-
-        // 為每個床位添加點擊事件監聽 (邏輯不變)
-        beds.forEach(bed => {
-            bed.addEventListener('click', () => {
-                if (isLocked) return;
-
-                // 建立一個代表「點擊後」的新狀態物件
-                const currentState = {};
-                beds.forEach(b => {
-                    const bedId = b.dataset.bed;
-                    let isBedOn = b.classList.contains('on');
-                    
-                    // 如果是當前點擊的床，狀態要反轉
-                    if (b === bed) {
-                        isBedOn = !isBedOn;
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                const state = history[currentHistoryIndex];
+                bedStates = {...state.states};
+                
+                // 更新所有床位的視覺狀態
+                document.querySelectorAll('.bed').forEach(bed => {
+                    const bedId = bed.dataset.bed;
+                    if (bedStates[bedId]) {
+                        bed.classList.add('on');
+                        bed.style.backgroundColor = '#fbbf24';
+                        bed.style.fontWeight = 'bold';
+                        bed.style.transform = 'scale(1.05)';
+                    } else {
+                        bed.classList.remove('on');
+                        bed.style.backgroundColor = 'white';
+                        bed.style.fontWeight = 'normal';
+                        bed.style.transform = 'scale(1)';
                     }
-                    
-                    currentState[bedId] = isBedOn ? 'on' : 'off';
                 });
                 
-                // 發送這個完整的新狀態給伺服器
-                socket.emit('updateState', currentState);
-            });
-        });
+                // 更新最後更新時間
+                updateLastUpdateTime();
+                updateStats();
+            }
+        }
 
-        // 初始載入時，保持鎖定狀態
-        setLockState(true);
+        // 更新最後更新時間
+        function updateLastUpdateTime() {
+            const now = new Date();
+            document.getElementById('last-update').textContent = now.toLocaleString('zh-HK');
+        }
+
+
+
+        // 獲取團隊使用數量
+        function getTeamCount(start, end) {
+            let count = 0;
+            for (let i = start; i <= end; i++) {
+                if (bedStates[i.toString()] || bedStates[i + 'A']) count++;
+            }
+            return count;
+        }
+
+        // 更新統計資訊
+        function updateStats() {
+            const team1Count = getTeamCount(1, 15);
+            const team2Count = getTeamCount(16, 29);
+            const team3Count = getTeamCount(30, 44);
+            const totalCount = team1Count + team2Count + team3Count;
+            
+            document.getElementById('team1-count').textContent = team1Count;
+            document.getElementById('team2-count').textContent = team2Count;
+            document.getElementById('team3-count').textContent = team3Count;
+            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('total-used').textContent = totalCount;
+        }
+
+        // 啟動應用
+        init();
     </script>
-</body>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a70a2646975c88',t:'MTc1NDQwNDcyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
