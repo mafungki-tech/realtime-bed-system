@@ -262,11 +262,11 @@
                 let stateChanged = false;
                 if (clickCount === 1 && !bed.classList.contains('on')) {
                     stateChanged = true;
-                } else if (clickCount === 2 && bed.classList.contains('on')) {
+                } else if (clickCount === 1 && bed.classList.contains('on')) {
                     clickCount = 0;
                     stateChanged = true;
                 }
-                if (clickCount > 2) clickCount = 0;
+                if (clickCount > 5) clickCount = 0;
 
                 if (stateChanged) {
                     const currentState = {};
